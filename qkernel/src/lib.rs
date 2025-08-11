@@ -660,13 +660,19 @@ pub extern "C" fn rust_main(
         if autoStart {
             CreateTask(StartRootContainer as u64, ptr::null(), false);
         }
-
+    
         if SHARESPACE.config.read().Sandboxed {
             self::InitLoader();
         }
+
+        CreateTask(ControllerProcess as u64, ptr::null(), true);
     }
 
     WaitFn();
+}
+
+fn ControllerProcess(_para: *const u8) {
+    ControllerProcessHandler().expect("ControllerProcess crash");
 }
 
 fn StartExecProcess(fd: i32, process: Process) -> ! {

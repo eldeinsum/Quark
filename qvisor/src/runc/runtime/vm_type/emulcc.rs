@@ -17,11 +17,10 @@ use std::{os::fd::FromRawFd, sync::{atomic::Ordering, Arc}};
 use hashbrown::HashMap;
 use kvm_ioctls::{Cap, Kvm, VmFd};
 
-use crate::FD_NOTIFIER;
 use crate::{arch::{tee::util::{adjust_addr_to_guest, adjust_addr_to_host},
             vm::vcpu::ArchVirtCpu}, elf_loader::KernelELF, print::LOG,
             qlib::{addr::{Addr, PageOpts}, common::Error, kernel::{kernel::{futex, timer},
-            vcpu::CPU_LOCAL, SHARESPACE, IOURING}, linux_def::{MemoryDef, EVENT_READ}, pagetable::PageTables,
+            vcpu::CPU_LOCAL, SHARESPACE, IOURING}, linux_def::MemoryDef, pagetable::PageTables,
             pagetable::HugePageType, ShareSpace}, runc::runtime::{loader::Args,
             vm::{self, VirtualMachine}}, tsot_agent::TSOT_AGENT, CCMode, VMSpace,
             KERNEL_IO_THREAD, PMA_KEEPER, QUARK_CONFIG, ROOT_CONTAINER_ID,
@@ -368,13 +367,11 @@ impl VmType for VmCcEmul {
             let shared_copy = vms.args.as_ref().unwrap().Spec.Copy();
             vms.args.as_mut().unwrap().Spec = shared_copy;
         }
-
         shared_space_obj.Init(vcpu_count, control_sock, rdma_svc_cli_sock, pod_id);
         SHARE_SPACE.SetValue(share_space_addr.unwrap());
         SHARESPACE.SetValue(share_space_addr.unwrap());
         let share_space_ptr = SHARE_SPACE.Ptr();
         KERNEL_IO_THREAD.Init(share_space_ptr.scheduler.VcpuArr[0].eventfd);
-        FD_NOTIFIER.EpollCtlAdd(control_sock, EVENT_READ).unwrap();
         IOURING.SetValue(share_space_ptr.GetIOUringAddr());
 
         unsafe {

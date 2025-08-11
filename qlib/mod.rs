@@ -1401,8 +1401,8 @@ impl ShareSpace {
         }
 
         error!("AQHostInputPush 2");
-        self.scheduler.WakeOne();
-        error!("AQHostInputPush 3");
+        let cpuID = self.scheduler.WakeOne();
+        error!("AQHostInputPush 3, CPUID {:?}", cpuID);
     }
 
     #[inline]

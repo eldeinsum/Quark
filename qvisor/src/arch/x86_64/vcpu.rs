@@ -77,7 +77,7 @@ impl VirtCpu for X86_64VirtCpu {
         let _vcpu_base = KVMVcpu::Init(vcpu_id, total_vcpus, entry_addr,
             stack_size, _vcpu_fd, auto_start)?;
 
-        info!("The tssIntStackStart:{:#x}, tss address:{:#x}, idt addr:{:#x}, gdt addr:{:#x}",
+        debug!("The tssIntStackStart:{:#x}, tss address:{:#x}, idt addr:{:#x}, gdt addr:{:#x}",
             _tisa, _tss_addr, _idt_addr, _gtd_addr);
         let _conf_comp_ext = match conf_extension {
             CCMode::None =>
@@ -470,7 +470,7 @@ impl X86_64VirtCpu {
         unsafe {
             (*tssSegment).interrupt_stack_table[0] = stack_end;
             (*tssSegment).iomap_base = -1 as i16 as u16;
-            info!("vCPU:[{}] - tss segment stack:{:#x}", self.vcpu_base.id,
+            debug!("vCPU:[{}] - tss segment stack:{:#x}", self.vcpu_base.id,
                 self.tss_intr_stack_start + MemoryDef::INTERRUPT_STACK_PAGES * MemoryDef::PAGE_SIZE
             );
             let (tssLow, tssHigh, limit) = Self::tss_descriptor(&(*tssSegment),
