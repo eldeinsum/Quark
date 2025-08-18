@@ -41,6 +41,7 @@ pub const FREE_BATCH: usize = 1024; // free 10 blocks each time.
 pub const ORDER: usize = 33; //1GB
 
 //pub static GLOBAL_ALLOCATOR: HostAllocator = HostAllocator::New();
+pub static MAXIMUM_PAGE_START: AtomicU64 = AtomicU64::new(MemoryDef::GUEST_PRIVATE_INIT_HEAP_OFFSET);
 
 pub fn CheckZeroPage(pageStart: u64) {
     use alloc::slice;
@@ -375,6 +376,11 @@ impl HostAllocator {
         let layout = Layout::from_size_align(size, align)
             .expect("AllocGuestPrivatMem can't allocate memory");
         let ptr = self.GuestPrivateAllocator().alloc(layout);
+        if crate::qlib::kernel::arch::tee::is_cc_active() {
+            let mut max = MAXIMUM_PAGE_START.load(Ordering::Acquire);
+            max = max.max(ptr as u64 + size as u64 - MemoryDef::PAGE_SIZE_4K);
+            MAXIMUM_PAGE_START.store(max, Ordering::Release);
+        }
         return ptr;
     }
 
