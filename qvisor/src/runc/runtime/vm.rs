@@ -17,7 +17,6 @@ use core::sync::atomic::{AtomicI32, AtomicU64, Ordering};
 use std::os::unix::io::AsRawFd;
 use std::thread;
 use std::thread::JoinHandle;
-
 use kvm_bindings::*;
 use kvm_ioctls::{Kvm, VmFd};
 use lazy_static::lazy_static;

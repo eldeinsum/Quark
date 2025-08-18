@@ -13,10 +13,9 @@
 // limitations under the License.
 
 use std::{string::String, fmt};
+use alloc::collections::btree_map::BTreeMap;
 
-use hashbrown::HashMap;
-
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub enum MemAreaType {
     PrivateHeapArea,
     SharedHeapArea,
@@ -59,7 +58,7 @@ impl fmt::Debug for MemArea {
 }
 
 pub(in super) struct MemLayoutConfig {
-    pub mem_area_map: HashMap<MemAreaType, MemArea>,
+    pub mem_area_map: BTreeMap<MemAreaType, MemArea>,
     pub kernel_stack_size: usize,
     pub guest_mem_size: u64,
 }

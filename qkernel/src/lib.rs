@@ -21,7 +21,6 @@
 #![allow(non_snake_case)]
 #![allow(bare_trait_objects)]
 #![feature(allocator_api)]
-#![feature(associated_type_bounds)]
 #![feature(maybe_uninit_uninit_array)]
 #![feature(panic_info_message)]
 #![allow(deprecated)]
@@ -37,7 +36,6 @@ extern crate bitflags;
 extern crate cache_padded;
 extern crate crossbeam_queue;
 extern crate enum_dispatch;
-extern crate hashbrown;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]

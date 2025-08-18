@@ -34,6 +34,7 @@ use crate::GLOCK;
 use qlib::{linux_def::MemoryDef, common::Error, qmsg::qcall::{Print, QMsg},
     GetTimeCall, linux::time::Timespec, VcpuFeq,
     cpuid::XSAVEFeature::{XSAVEFeatureBNDREGS, XSAVEFeatureBNDCSR}};
+use alloc::collections::BTreeMap;
 
 pub struct X86_64VirtCpu {
     pub gtd_addr: u64,
