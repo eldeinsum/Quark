@@ -17,6 +17,9 @@ pub mod noncc;
 pub mod emulcc;
 pub mod resources;
 
+#[cfg(feature = "snp")]
+pub mod sevsnp;
+
 use std::sync::Arc;
 use kvm_ioctls::{Kvm, VmFd};
 use crate::{arch::vm::vcpu::ArchVirtCpu, elf_loader::KernelELF, qlib::common::Error,

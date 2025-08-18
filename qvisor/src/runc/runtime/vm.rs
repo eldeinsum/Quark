@@ -27,6 +27,8 @@ use crate::arch::vm::vcpu::ArchVirtCpu;
 use crate::qlib::kernel::arch::tee::get_tee_type;
 use crate::qlib::MAX_VCPU_COUNT;
 use crate::runc::runtime::vm_type::emulcc::VmCcEmul;
+#[cfg(feature = "snp")]
+use crate::runc::runtime::vm_type::sevsnp::VmSevSnp;
 
 use super::super::super::elf_loader::*;
 use super::super::super::kvm_vcpu::*;
@@ -132,8 +134,9 @@ impl VirtualMachine {
         PerfGoto(PerfType::Other);
         let (vm_type, kernel_elf) = match cc_mode {
             CCMode::None => VmNormal::init(Some(&args))?,
-            CCMode::Normal | CCMode::NormalEmu =>
-                VmCcEmul::init(Some(&args))?,
+            CCMode::Normal | CCMode::NormalEmu => VmCcEmul::init(Some(&args))?,
+            #[cfg(feature = "snp")]
+            CCMode::SevSnp => VmSevSnp::init(Some(&args))?,
             _ => panic!("Unhandled type."),
         };
         let umask = Self::Umask();
