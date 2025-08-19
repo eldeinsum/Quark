@@ -355,7 +355,7 @@ impl VirtCpu for X86_64VirtCpu {
             VcpuExit::Hlt => {
                 error!("vCPU:{} - Halt-Exit", id);
             },
-            VcpuExit::FailEntry => {
+            VcpuExit::FailEntry(_, _) => {
                 error!("vCPU:{} - FailedEntry-Exit", id);
                 return Ok(true);
             },

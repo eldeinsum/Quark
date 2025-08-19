@@ -137,6 +137,7 @@ impl VirtualMachine {
             CCMode::Normal | CCMode::NormalEmu => VmCcEmul::init(Some(&args))?,
             #[cfg(feature = "snp")]
             CCMode::SevSnp => VmSevSnp::init(Some(&args))?,
+            #[allow(unreachable_patterns)]
             _ => panic!("Unhandled type."),
         };
         let umask = Self::Umask();
