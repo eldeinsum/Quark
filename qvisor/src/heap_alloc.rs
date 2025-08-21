@@ -10,7 +10,8 @@ use super::qlib::mem::list_allocator::*;
 
 pub const ENABLE_HUGEPAGE: bool = false;
 
-use crate::qlib::kernel::arch::tee::is_cc_active;
+use crate::qlib::kernel::arch::tee::{is_cc_active, get_tee_type};
+use crate::CCMode;
 use crate::qlib::kernel::Kernel::IDENTICAL_MAPPING;
 
 impl BitmapAllocatorWrapper {
@@ -169,7 +170,8 @@ impl HostAllocator {
                 }
             }
         }
-        let heap_size = if identical {
+
+        let heap_size = if identical || get_tee_type() == CCMode::SevSnp {
             MemoryDef::GUEST_PRIVATE_HEAP_SIZE
         } else {
             MemoryDef::GUEST_PRIVATE_INIT_HEAP_SIZE
