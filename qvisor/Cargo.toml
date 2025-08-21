@@ -62,7 +62,8 @@ sev = { git = "https://github.com/yaoxin-jing/sev.git", branch = "quark" }
 
 [features]
 cuda = ["cuda-driver-sys", "cuda-runtime-sys", "libelf", "rcublas-sys", "cuda11-cublasLt-sys"]
-snp = []
+snp = ["yaxpeax-x86"]
+
 
 [dependencies.lazy_static]
 version = "1.4"
@@ -72,6 +73,12 @@ features = ["spin_no_std"]
 version = "0.3.8"
 default-features = false
 features = ["alloc"]
+
+[dependencies.yaxpeax-x86]
+version = "1.2.2"
+default-features = false
+optional = true
+
 
 [profile.dev]
 opt-level = 0
