@@ -13,6 +13,8 @@
 // limitations under the License.
 
 
-pub mod config;
-pub mod attester;
-pub mod util;
+pub enum InitDataStatus {
+    Match,
+    NoMatch,
+    Unsupported,
+}

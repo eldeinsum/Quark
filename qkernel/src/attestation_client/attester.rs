@@ -12,7 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use alloc::{boxed::Box, vec::Vec};
 
-pub mod config;
-pub mod attester;
-pub mod util;
+use crate::drivers::tee::attestation::{Challenge, Response};
+use crate::qlib::common::Result;
+
+use super::util::InitDataStatus;
+
+pub trait AttesterT {
+    fn get_tee_evidence(&self, challenge: &mut Challenge) -> Result<Response>;
+
+    fn check_init_data(&self, _init_data: Vec<u8>) -> Result<InitDataStatus> {
+        Ok(InitDataStatus::Unsupported)
+    }
+
+    fn extend_runtime_measurement(&self) -> Result<bool> {
+        Ok(false)
+    }
+}
+
+pub type Attester = Box<dyn AttesterT>;
