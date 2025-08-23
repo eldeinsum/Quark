@@ -123,6 +123,8 @@ use alloc::boxed::Box;
 use memmgr::pma::PageMgr;
 #[cfg(feature = "snp")]
 use crate::qlib::kernel::arch::__arch::arch_def::*;
+pub mod drivers;
+pub mod attestation_client;
 
 #[macro_use]
 mod print;
