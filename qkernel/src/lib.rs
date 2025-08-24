@@ -60,6 +60,7 @@ extern crate serde;
 extern crate jwt_compact;
 extern crate kbs_types;
 extern crate getrandom;
+extern crate zeroize;
 
 // Sev/Snp
 #[cfg(feature = "snp")]

@@ -16,6 +16,7 @@
 pub mod config;
 pub mod attester;
 pub mod util;
+pub mod kbs;
 
 
 use alloc::string::String;
