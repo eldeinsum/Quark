@@ -11,6 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use core::convert::TryFrom;
+use alloc::string::String;
+use crate::qlib::common::Result;
+
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -165,5 +169,20 @@ impl CCMode {
             CCMode::SevSnp => true,
             _ => false,
         }
+    }
+}
+
+impl TryFrom<CCMode> for String {
+    type Error = crate::qlib::common::Error;
+
+    fn try_from(cc_mode: CCMode) -> Result<String> {
+        let mode_str = match cc_mode {
+            CCMode::Normal => String::from("normal"),
+            CCMode::NormalEmu => String::from("normalemu"),
+            CCMode::SevSnp => String::from("snp"),
+            _ => String::from("none"),
+        };
+
+        Ok(mode_str)
     }
 }

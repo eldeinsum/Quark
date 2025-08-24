@@ -743,6 +743,13 @@ pub extern "C" fn rust_main(
     WaitFn();
 }
 
+//Dummy: Only to avoid issues with qvisor
+use alloc::string::String;
+use alloc::vec::Vec;
+pub fn try_attest(config_path: Option<String>, envv: Option<Vec<String>>) {
+    crate::attestation_client::AttestationClient::try_attest(config_path, envv);
+}
+
 fn ControllerProcess(_para: *const u8) {
     ControllerProcessHandler().expect("ControllerProcess crash");
 }
