@@ -716,6 +716,7 @@ impl<'a> GhcbHandle<'a> {
             }
         }
     }
+    
 }
 
 pub fn next_contig_gpa_range(

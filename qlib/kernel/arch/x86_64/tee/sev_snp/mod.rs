@@ -17,7 +17,7 @@ use self::Error::{FailInput, FailSizeMismatch, Unknown};
 use core::arch::asm;
 use core::sync::atomic::{AtomicU64, Ordering};
 use x86_64::VirtAddr;
-
+pub mod secret_page;
 pub mod cpuid_page;
 pub mod ghcb;
 pub mod vc;
