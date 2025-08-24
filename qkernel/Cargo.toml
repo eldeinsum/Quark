@@ -30,6 +30,8 @@ jwt-compact = {version = "0.8.0", default-features = false}
 kbs-types = {version = "0.7.0", default-features = false, features = ["alloc"]}
 zeroize = "1.6.0"
 sha2 = {version = "0.10.8", default-features = false, features = ["force-soft"]}
+uuid = {version = "1.8.0", default-features = false, features = ["serde"]}
+serde-big-array = "0.5.1"
 
 [features]
 default = ["snp"]

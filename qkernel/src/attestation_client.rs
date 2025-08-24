@@ -18,6 +18,7 @@ pub mod attester;
 pub mod util;
 pub mod kbc;
 
+use self::attester::sev::SevAttester;
 use core::convert::TryFrom;
 use log::*;
 use alloc::string::{String, ToString};
@@ -37,9 +38,7 @@ use crate::{drivers::tee::attestation::{Challenge, Response},
 use self::kbc::{kbc_build, Kbc};
 use self::util::{AttestationToken, InitDataStatus};
 use self::{attester::Attester, config::AaConfig};
-
-
-
+use alloc::boxed::Box;
 
 pub trait AttestationClientTrait {
     fn get_hw_tee_type(&self) -> Option<CCMode> {
@@ -184,14 +183,10 @@ impl AttestationClient {
                 error!("AA: No AA instance for CC mode:{:?}", mode);
                 None
             },
-            _ => {
-                error!("AA: Attestation currently not implmented for:{:?}", mode);
-                None
-            },
+            CCMode::SevSnp => Some(Box::new(SevAttester::default())),
         }
     }
 }
-
 impl AttestationClientTrait for AttestationClient {
     fn get_attestation_token(&mut self, con_client: &mut ConnectionClient)
         -> Result<AttestationToken> {
