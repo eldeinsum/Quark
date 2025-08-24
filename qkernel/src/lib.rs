@@ -61,7 +61,7 @@ extern crate jwt_compact;
 extern crate kbs_types;
 extern crate getrandom;
 extern crate zeroize;
-
+extern crate sha2;
 // Sev/Snp
 #[cfg(feature = "snp")]
 extern crate yaxpeax_arch;

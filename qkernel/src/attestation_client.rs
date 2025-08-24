@@ -16,7 +16,7 @@
 pub mod config;
 pub mod attester;
 pub mod util;
-pub mod kbs;
+pub mod kbc;
 
 
 use alloc::string::String;
@@ -32,7 +32,7 @@ use self::{attester::Attester, config::AaConfig};
 // Placeholder
 struct DummyKbc;
 
-pub trait AttestationClineTrait {
+pub trait AttestationClientTrait {
     fn get_hw_tee_type(&self) -> Option<CCMode> {
         if is_hw_tee() {
             return Some(get_tee_type());
@@ -74,7 +74,7 @@ impl AttestationClient {
     }
 }
 
-impl AttestationClineTrait for AttestationClient {
+impl AttestationClientTrait for AttestationClient {
     fn get_attestation_token(&mut self) -> Result<AttestationToken> {
         todo!("implement me");
     }
