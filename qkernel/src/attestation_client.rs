@@ -19,23 +19,33 @@ pub mod util;
 pub mod kbc;
 
 use self::attester::sev::SevAttester;
+#[allow(unused_imports)]
 use core::convert::TryFrom;
 use log::*;
+#[allow(unused_imports)]
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+#[allow(unused_imports)]
 use crate::attestation_client::util::connection::{tls_connection,
     ConnectionClient, Connector};
+#[allow(unused_imports)]
 use crate::attestation_client::util::ResourceUri;
 use crate::qlib::common::{Result, Error};
+#[allow(unused_imports)]
 use crate::qlib::linux_def::{ATType, Flags};
+#[allow(unused_imports)]
 use crate::syscalls::sys_file::{close, createAt};
+#[allow(unused_imports)]
 use crate::syscalls::sys_write::Write;
+#[allow(unused_imports)]
 use crate::Task;
 use crate::{drivers::tee::attestation::{Challenge, Response},
     qlib::{config::CCMode, kernel::arch::tee::{get_tee_type,
         is_hw_tee}}};
 
+#[allow(unused_imports)]
 use self::kbc::{kbc_build, Kbc};
+#[allow(unused_imports)]
 use self::util::{AttestationToken, InitDataStatus};
 use self::{attester::Attester, config::AaConfig};
 use alloc::boxed::Box;
@@ -67,6 +77,7 @@ pub trait AttestationClientTrait {
     }
 }
 
+#[allow(dead_code)]
 pub struct AttestationClient {
     attester: Attester,
     kbc: Kbc,
@@ -74,43 +85,40 @@ pub struct AttestationClient {
 }
 
 impl AttestationClient {
-    pub fn try_attest(config_path: Option<String>, envv: Option<Vec<String>>) {
-        let mut aa: AttestationClient = Self::new(config_path, envv)
-            .expect("AA - failed to create instance");
-        let resource_list = aa.get_resource_list();
-        let mut retrived_resource: Vec<(String, Vec<u8>)> = vec![];
-        debug!("VM: Required resources: {:?}", resource_list);
-        let mut read_rec = [0u8; util::connection::Connector::TLS_RECORD];
-        let mut write_rec = [0u8; util::connection::Connector::TLS_RECORD];
-        let httpc = Connector::create_connector(aa.kbc.kbs_address());
-        let bind = httpc.clone();
-        let tls = tls_connection(&bind, &mut read_rec, &mut write_rec)
-            .map_err(|e| {
-                panic!("VM: AttAgent - Failed to create TLS connection to KBS:{:?}",e);
-            })
-            .unwrap();
-        let mut conn_client = ConnectionClient {
-            http_client: httpc,
-            tls_conn: tls,
-            cookie: "".to_string()
-        };
-        let token = aa.get_attestation_token(&mut conn_client)
-            .expect("AA - failed to get Token");
-        debug!("AA: Token:{:?}", token);
-        for item in resource_list {
-            let resource = aa.kbc.get_resource(&mut conn_client, item.1)
-                .expect("Exptect resource");
-            debug!("VM: Secret:{:?}", resource);
-            let dir_path = format!("/opt/{}", item.0);
-            retrived_resource.push((dir_path, resource));
+    pub fn try_attest(_config_path: Option<String>, _envv: Option<Vec<String>>) {
+        // Generate local attestation report to verify TEE environment
+        let tee_type = get_tee_type();
+        let attester = Self::get_attester(tee_type);
+        if attester.is_none() {
+            error!("VM: AA - No attester available for TEE type: {:?}", tee_type);
+            return;
         }
-        debug!("VM: AA - close connection to KBS");
-        let _ = conn_client.close().map_err(|e| {
-            panic!("VM: Failed to close connection with KBS: {:?}", e);
-        });
-        Self::install_resource(retrived_resource);
+
+        
+        // Generate attestation report with empty challenge (for self-verification)
+        let attester = attester.unwrap();
+        let challenge: Challenge = vec![0u8; 64];
+        match attester.get_tee_evidence(&mut challenge.clone()) {
+            Ok(report) => {
+                info!("VM: AA - Successfully generated attestation report ({} bytes)", report.len());
+            }
+            Err(e) => {
+                error!("VM: AA - Failed to generate attestation report: {:?}", e);
+            }
+        }
+
+        // TODO: KBS-based remote attestation is disabled for now.
+        // It should only be enabled when:
+        // 1. Running in shim mode (k8s)
+        // 2. User specifies secrets in their yaml configuration
+        //
+        // let mut aa: AttestationClient = Self::new(config_path, envv)
+        //     .expect("AA - failed to create instance");
+        // let resource_list = aa.get_resource_list();
+        // ... KBS connection and resource retrieval ...
     }
 
+    #[allow(dead_code)]
     fn install_resource(list: Vec<(String, Vec<u8>)>) {
         use crate::qlib::linux_def::{ModeType, FileMode};
         use crate::qlib::cstring::CString;
@@ -140,6 +148,7 @@ impl AttestationClient {
         }
     }
 
+    #[allow(dead_code)]
     fn get_resource_list(&self) -> Vec<(String, ResourceUri)> {
         let mut resourse_list: Vec<(String, ResourceUri)> = vec![];
         self.config.kbs_resources()
@@ -159,6 +168,7 @@ impl AttestationClient {
         resourse_list
     }
 
+    #[allow(dead_code)]
     pub fn new(_config_path: Option<String>, _env: Option<Vec<String>>) -> Result<Self> {
         let _attester = Self::get_attester(get_tee_type());
         if _attester.is_none() {

@@ -301,29 +301,33 @@ impl Loader {
             execProc,
         );
 
-        let envv = procArgs.Envv.clone();
-        let mut aa_env_conf: Vec<String> = Vec::new();
-        let mut attest = true;
+        // Only attempt attestation when running in a hardware TEE environment
+        use crate::qlib::kernel::arch::tee::is_hw_tee;
+        if is_hw_tee() {
+            let envv = procArgs.Envv.clone();
+            let mut aa_env_conf: Vec<String> = Vec::new();
+            let mut attest = true;
 
-        for e in envv {
-            if e.contains("Q_AA_") {
-                if e.contains("NO_ATTEST") {
-                    attest = false;
-                    break;
+            for e in envv {
+                if e.contains("Q_AA_") {
+                    if e.contains("NO_ATTEST") {
+                        attest = false;
+                        break;
+                    }
+                    aa_env_conf.push(e.clone());
                 }
-                aa_env_conf.push(e.clone());
             }
-        }
 
-        if attest {
-             let env_conf = if aa_env_conf.is_empty() {
-                 None
-             } else {
-                 Some(aa_env_conf)
-             };
-            crate::try_attest(None, env_conf);
-        } else {
-            error!("VM: No attestation has been performed.");
+            if attest {
+                let env_conf = if aa_env_conf.is_empty() {
+                    None
+                } else {
+                    Some(aa_env_conf)
+                };
+                crate::try_attest(None, env_conf);
+            } else {
+                info!("VM: Attestation disabled via Q_AA_NO_ATTEST");
+            }
         }
 
         let (entry, userStackAddr, kernelStackAddr) =

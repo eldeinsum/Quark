@@ -137,8 +137,11 @@ impl VirtualMachine {
             CCMode::Normal | CCMode::NormalEmu => VmCcEmul::init(Some(&args))?,
             #[cfg(feature = "snp")]
             CCMode::SevSnp => VmSevSnp::init(Some(&args))?,
-            #[allow(unreachable_patterns)]
-            _ => panic!("Unhandled type."),
+            #[cfg(not(feature = "snp"))]
+            CCMode::SevSnp => {
+                panic!("SevSnp mode requested but binary was not compiled with 'snp' feature. \
+                       Please rebuild with 'make snp_all' or set CCMode to None in config.json");
+            }
         };
         let umask = Self::Umask();
         info!("VMM: Reset umask from {:o} to {}", umask, 0);
