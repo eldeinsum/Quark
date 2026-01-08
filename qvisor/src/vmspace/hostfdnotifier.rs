@@ -15,14 +15,9 @@
 use libc::*;
 
 use crate::qlib::kernel::GlobalIOMgr;
-use crate::HostInputMsg;
-use crate::VMS;
 
 use super::super::qlib::common::*;
 use super::super::qlib::linux_def::*;
-use super::kernel::SHARESPACE;
-//use super::super::qlib::qmsg::input::*;
-//use super::super::SHARE_SPACE;
 
 pub struct HostFdNotifier {
     //main epoll fd
@@ -101,19 +96,6 @@ impl HostFdNotifier {
     }
 
     pub fn FdNotify(fd: i32, mask: EventMask) {
-        let controlSock = VMS.lock().controlSock;
-        if fd == controlSock {
-            let fd = unsafe { libc::accept(controlSock, 0 as _, 0 as _) };
-            assert!(
-                fd > 0,
-                "controlSock {} accept fail with error {}",
-                controlSock,
-                errno::errno()
-            );
-
-            SHARESPACE.AQHostInputPush(&HostInputMsg::ControlSockReady(fd));
-        } else {
-            GlobalIOMgr().Notify(fd, mask);
-        }
+        GlobalIOMgr().Notify(fd, mask);
     }
 }

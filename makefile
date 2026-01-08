@@ -19,7 +19,7 @@ QUARK_RELEASE   = $(QTARGET_RELEASE)/quark
 VDSO            = vdso/vdso.so
 
 ARCH := ${shell uname -m}
-RUST_TOOLCHAIN  = nightly-2023-12-11-$(ARCH)-unknown-linux-gnu
+RUST_TOOLCHAIN  = nightly-2024-07-01-$(ARCH)-unknown-linux-gnu
 
 
 .PHONY: all release debug clean install qvisor_release qvisor_debug cuda_make cuda_all cleanall
@@ -27,6 +27,8 @@ RUST_TOOLCHAIN  = nightly-2023-12-11-$(ARCH)-unknown-linux-gnu
 all:: release debug
 
 cuda_all:: cuda_release cuda_debug
+
+snp_all:: snp_release snp_debug
 
 release:: qvisor_release qkernel_release $(VDSO)
 
@@ -69,6 +71,22 @@ qvisor_cuda_release:
 
 qvisor_cuda_debug:
 	make -C ./qvisor TOOLCHAIN=$(RUST_TOOLCHAIN) cuda_debug
+
+snp_release:: qvisor_snp_release qkernel_snp_release $(VDSO)
+
+snp_debug:: qvisor_snp_debug qkernel_snp_debug $(VDSO)
+
+qkernel_snp_release:
+	make -C ./qkernel TOOLCHAIN=$(RUST_TOOLCHAIN) snp_release
+
+qkernel_snp_debug:
+	make -C ./qkernel TOOLCHAIN=$(RUST_TOOLCHAIN) snp_debug
+
+qvisor_snp_release:
+	make -C ./qvisor TOOLCHAIN=$(RUST_TOOLCHAIN) snp_release
+
+qvisor_snp_debug:
+	make -C ./qvisor TOOLCHAIN=$(RUST_TOOLCHAIN) snp_debug
 
 install:
 	-sudo cp -f $(QKERNEL_RELEASE) $(QBIN_DIR)/

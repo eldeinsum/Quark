@@ -965,7 +965,6 @@ pub enum HostInputMsg {
     Default,
     Hibernate,
     Wakeup,
-    ControlSockReady(i32),
 }
 
 impl Default for HostInputMsg {

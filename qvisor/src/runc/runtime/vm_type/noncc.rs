@@ -18,16 +18,15 @@ use super::{resources::{MemArea, MemLayoutConfig, VmResources}, VmType};
 use crate::arch::{VirtCpu, vm::vcpu::ArchVirtCpu};
 use crate::qlib::kernel::{vcpu, IOURING, KERNEL_PAGETABLE, PAGE_MGR};
 use crate::CCMode;
-use crate::FD_NOTIFIER;
 use crate::{elf_loader::KernelELF, print::LOG, qlib, runc::runtime, tsot_agent::TSOT_AGENT,
             vmspace::VMSpace, KERNEL_IO_THREAD, PMA_KEEPER, QUARK_CONFIG, ROOT_CONTAINER_ID,
             SHARE_SPACE, SHARE_SPACE_STRUCT, URING_MGR, VMS};
 use addr::{Addr, PageOpts};
-use hashbrown::HashMap;
+use alloc::collections::btree_map::BTreeMap;
 use kernel::{kernel::futex, kernel::timer, task, KERNEL_STACK_ALLOCATOR, SHARESPACE};
 use kvm_ioctls::{Cap, Kvm, VmFd};
 use pagetable::{AlignedAllocator, PageTables};
-use qlib::{addr, common::Error, kernel, linux_def::{MemoryDef, EVENT_READ}, pagetable};
+use qlib::{addr, common::Error, kernel, linux_def::MemoryDef, pagetable};
 use runtime::{loader::Args, vm};
 use std::fmt;
 use std::ops::Deref;
@@ -58,8 +57,8 @@ impl VmType for VmNormal {
         crate::GLOBAL_ALLOCATOR.InitAllocator();
         crate::GLOBAL_ALLOCATOR.vmLaunched.store(true, Ordering::SeqCst);
         let _pod_id = args.expect("VM creation expects arguments").ID.clone();
-        let default_min_vcpus = 2;
-        let mut _hshared_map:HashMap<MemAreaType, MemArea> = HashMap::new();
+        let default_min_vcpus: usize = 2;
+        let mut _hshared_map:BTreeMap<MemAreaType, MemArea> = BTreeMap::new();
         _hshared_map.insert(
             MemAreaType::SharedHeapArea,
             MemArea{
@@ -282,7 +281,6 @@ impl VmType for VmNormal {
         SHARESPACE.SetValue(shared_space_table);
         let share_space_ptr = SHARE_SPACE.Ptr();
         KERNEL_IO_THREAD.Init(share_space_ptr.scheduler.VcpuArr[0].eventfd);
-        FD_NOTIFIER.EpollCtlAdd(control_sock, EVENT_READ).unwrap();
         IOURING.SetValue(share_space_ptr.GetIOUringAddr());
 
         unsafe {

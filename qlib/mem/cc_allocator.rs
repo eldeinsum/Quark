@@ -8,6 +8,8 @@ use core::alloc::{AllocError, Allocator, GlobalAlloc, Layout};
 use core::cell::UnsafeCell;
 use core::ptr::NonNull;
 use core::sync::atomic::Ordering;
+use crate::CCMode;
+use crate::qlib::kernel::arch::tee::get_tee_type;
 
 #[derive(Debug, Default)]
 #[repr(C)]
@@ -88,7 +90,9 @@ impl HostAllocator {
 
     pub fn IsGuestPrivateHeapAddr(&self, addr: u64) -> bool {
         let heapStart = self.guestPrivHeapAddr.load(Ordering::Relaxed);
-        let heapSize = if crate::qlib::kernel::Kernel::IDENTICAL_MAPPING.load(Ordering::Acquire) {
+        let heapSize = if crate::qlib::kernel::Kernel::IDENTICAL_MAPPING.load(Ordering::Acquire)
+            && get_tee_type() != CCMode::SevSnp
+        {
             MemoryDef::GUEST_PRIVATE_HEAP_SIZE
         } else {
             MemoryDef::GUEST_PRIVATE_RUNNING_HEAP_SIZE

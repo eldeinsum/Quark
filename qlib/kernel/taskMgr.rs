@@ -112,7 +112,7 @@ pub fn WaitFn() -> ! {
 
                 let mut addr;
                 loop{
-                    //debug!("vcpu sleep");
+                    debug!("vcpu sleep 0");
                     addr = HostSpace::VcpuWait();
                     assert!(addr >= 0);
                     ProcessInputMsgs();
@@ -185,9 +185,6 @@ pub fn ProcessInputMsgs() {
                         HostSpace::SwapIn();
                         GetKernel().Unpause();
                     }
-                }
-                HostInputMsg::ControlSockReady(fd) => {
-                    CreateTask(ControlMsgHandler as u64, fd as *const u8, true);
                 }
                 HostInputMsg::Default => {}
             }

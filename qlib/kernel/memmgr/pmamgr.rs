@@ -17,10 +17,6 @@ use alloc::vec::Vec;
 use core::sync::atomic::AtomicU64;
 use core::sync::atomic::Ordering;
 use spin::Mutex;
-//use hashbrown::HashMap;
-//use core::hash::BuildHasherDefault;
-//use cache_padded::CachePadded;
-
 use super::super::super::common::*;
 use super::super::super::linux_def::*;
 use super::super::super::pagetable::*;
@@ -50,41 +46,12 @@ pub fn CheckZeroPage(pageStart: u64) {
     }
 }
 
-/*#[derive(Default)]
-pub struct RawHasher {
-    state: u64,
-}
-
-impl core::hash::Hasher for RawHasher {
-    fn write(&mut self, bytes: &[u8]) {
-        for &byte in bytes {
-            self.state = self.state.rotate_left(8) ^ u64::from(byte);
-        }
-    }
-
-    fn write_u64(&mut self, i: u64) {
-        self.state = i;
-    }
-
-    fn write_u32(&mut self, i: u32) {
-        self.state = i as u64;
-    }
-
-    fn finish(&self) -> u64 {
-        self.state
-    }
-}*/
 
 pub const REF_MAP_PARTITION_CNT: usize = 32;
 pub struct PagePool {
     //refCount for whole pma
     pub refCount: AtomicU64,
-    //pub refs: [Mutex<CachePadded<HashMap<u32, u32, BuildHasherDefault<RawHasher>>>>; REF_MAP_PARTITION_CNT],
-    //pub refs: Vec<CachePadded<Mutex<BTreeMap<u32, u32>>>>,
     pub refs: Vec<Mutex<BTreeMap<u32, u32>>>,
-    //pub refs: Vec<CachePadded<Mutex<HashMap<u32, u32>>>>,
-    //pub refs: [CachePadded<Mutex<BTreeMap<u32, u32>>>; REF_MAP_PARTITION_CNT],
-    //pub refs: [Mutex<HashMap<u32, u32>>; REF_MAP_PARTITION_CNT],
     pub allocator: AlignedAllocator,
 }
 

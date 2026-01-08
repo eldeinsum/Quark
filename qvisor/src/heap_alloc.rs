@@ -10,7 +10,8 @@ use super::qlib::mem::list_allocator::*;
 
 pub const ENABLE_HUGEPAGE: bool = false;
 
-use crate::qlib::kernel::arch::tee::is_cc_active;
+use crate::qlib::kernel::arch::tee::{is_cc_active, get_tee_type};
+use crate::CCMode;
 use crate::qlib::kernel::Kernel::IDENTICAL_MAPPING;
 
 impl BitmapAllocatorWrapper {
@@ -169,7 +170,8 @@ impl HostAllocator {
                 }
             }
         }
-        let heap_size = if identical {
+
+        let heap_size = if identical || get_tee_type() == CCMode::SevSnp {
             MemoryDef::GUEST_PRIVATE_HEAP_SIZE
         } else {
             MemoryDef::GUEST_PRIVATE_INIT_HEAP_SIZE
@@ -200,6 +202,75 @@ impl HostAllocator {
                 MemoryDef::IO_HEAP_SIZE as usize,
             );
         }
+    }
+
+    #[cfg(feature = "snp")]
+    pub fn MapSevSnpSpecialPages(&self) {
+        let host_init_cpuid_addr = unsafe {
+            let flags = libc::MAP_SHARED | libc::MAP_ANON | libc::MAP_FIXED;
+            libc::mmap(
+                MemoryDef::CPUID_PAGE as _,
+                MemoryDef::PAGE_SIZE as usize,
+                libc::PROT_READ | libc::PROT_WRITE,
+                flags,
+                -1,
+                0,
+            ) as u64
+        };
+        if host_init_cpuid_addr == libc::MAP_FAILED as u64 {
+            panic!("mmap: failed to get mapped memory area for cpuid page");
+        }
+
+        assert!(
+            host_init_cpuid_addr == MemoryDef::CPUID_PAGE,
+            "CPUID_PAGE expected address is {:x}, mmap address is {:x}",
+            MemoryDef::CPUID_PAGE,
+            host_init_cpuid_addr
+        );
+
+        let host_init_secret_addr = unsafe {
+            let flags = libc::MAP_SHARED | libc::MAP_ANON | libc::MAP_FIXED;
+            libc::mmap(
+                MemoryDef::SECRET_PAGE as _,
+                MemoryDef::PAGE_SIZE as usize,
+                libc::PROT_READ | libc::PROT_WRITE,
+                flags,
+                -1,
+                0,
+            ) as u64
+        };
+        if host_init_secret_addr == libc::MAP_FAILED as u64 {
+            panic!("mmap: failed to get mapped memory area for cpuid page");
+        }
+
+        assert!(
+            host_init_secret_addr == MemoryDef::SECRET_PAGE,
+            "SECRET_PAGE expected address is {:x}, mmap address is {:x}",
+            MemoryDef::SECRET_PAGE,
+            host_init_secret_addr
+        );
+
+        let host_init_ghcb_addr = unsafe {
+            let flags = libc::MAP_SHARED | libc::MAP_ANON | libc::MAP_FIXED;
+            libc::mmap(
+                MemoryDef::GHCB_OFFSET as _,
+                MemoryDef::PAGE_SIZE_2M as usize,
+                libc::PROT_READ | libc::PROT_WRITE,
+                flags,
+                -1,
+                0,
+            ) as u64
+        };
+        if host_init_ghcb_addr == libc::MAP_FAILED as u64 {
+            panic!("mmap: failed to get mapped memory area for ghcb page");
+        }
+
+        assert!(
+            host_init_ghcb_addr == MemoryDef::GHCB_OFFSET,
+            "GHCB_PAGE expected address is {:x}, mmap address is {:x}",
+            MemoryDef::GHCB_OFFSET,
+            host_init_ghcb_addr
+        );
     }
 }
 

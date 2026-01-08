@@ -17,7 +17,6 @@ use core::sync::atomic::{AtomicI32, AtomicU64, Ordering};
 use std::os::unix::io::AsRawFd;
 use std::thread;
 use std::thread::JoinHandle;
-
 use kvm_bindings::*;
 use kvm_ioctls::{Kvm, VmFd};
 use lazy_static::lazy_static;
@@ -28,6 +27,8 @@ use crate::arch::vm::vcpu::ArchVirtCpu;
 use crate::qlib::kernel::arch::tee::get_tee_type;
 use crate::qlib::MAX_VCPU_COUNT;
 use crate::runc::runtime::vm_type::emulcc::VmCcEmul;
+#[cfg(feature = "snp")]
+use crate::runc::runtime::vm_type::sevsnp::VmSevSnp;
 
 use super::super::super::elf_loader::*;
 use super::super::super::kvm_vcpu::*;
@@ -133,9 +134,14 @@ impl VirtualMachine {
         PerfGoto(PerfType::Other);
         let (vm_type, kernel_elf) = match cc_mode {
             CCMode::None => VmNormal::init(Some(&args))?,
-            CCMode::Normal | CCMode::NormalEmu =>
-                VmCcEmul::init(Some(&args))?,
-            _ => panic!("Unhandled type."),
+            CCMode::Normal | CCMode::NormalEmu => VmCcEmul::init(Some(&args))?,
+            #[cfg(feature = "snp")]
+            CCMode::SevSnp => VmSevSnp::init(Some(&args))?,
+            #[cfg(not(feature = "snp"))]
+            CCMode::SevSnp => {
+                panic!("SevSnp mode requested but binary was not compiled with 'snp' feature. \
+                       Please rebuild with 'make snp_all' or set CCMode to None in config.json");
+            }
         };
         let umask = Self::Umask();
         info!("VMM: Reset umask from {:o} to {}", umask, 0);
@@ -166,6 +172,7 @@ impl VirtualMachine {
                     });
                     info!("VMM: vCPU#{} - ThreadID:{} started", cpu_name, ThreadId());
                     match vm_type {
+                        CCMode::SevSnp => {cpu_obj.vcpu_run(tgid, Some(_kvm_fd_raw), Some(_vm_fd_raw)).expect("VMM: vCPU failed to run."); }
                         _ => { cpu_obj.vcpu_run(tgid, None, None).expect("VMM: vCPU failed to run."); }
                     };
 

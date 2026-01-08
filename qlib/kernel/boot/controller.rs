@@ -164,13 +164,12 @@ pub fn SignalHandler(_: *const u8) {
 
 pub fn ControlMsgHandler(fd: *const u8) {
     let fd = fd as i32;
-
     let task = Task::Current();
     let mut msg = Box::new_in(ControlMsg::default(), GUEST_HOST_SHARED_ALLOCATOR);
     Kernel::HostSpace::ReadControlMsg(fd, &mut *msg as *mut _ as u64);
 
-    //info!("payload: {:?}", &msg.payload);
-    //defer!(error!("payload handling ends"));
+    info!("ControlMsgHandler payload: {:?}", &msg.payload);
+    defer!(error!("ControlMsgHandler payload handling ends"));
     match msg.payload {
         Payload::Pause => {
             let kernel = LOADER.Lock(task).unwrap().kernel.clone();
